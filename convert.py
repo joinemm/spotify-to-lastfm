@@ -1,6 +1,3 @@
-# python script to convert spotify listening data to a simpler format for lastfm
-# Author: Joinemm
-
 from datetime import datetime
 from itertools import islice
 import json
