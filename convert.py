@@ -8,11 +8,8 @@ import math
 import os
 import sys
 
-SCROBBLES_PER_DAY = 2526
-
 
 def convert_file(filename):
-    # print("reading", filename, "...")
     with open(filename, "r") as f:
         dataset = json.load(f)
 
@@ -71,7 +68,7 @@ def chunk(it, size):
     return iter(lambda: tuple(islice(it, size)), ())
 
 
-def convert_all(files):
+def convert_all(files, per_day):
     all_songs = []
     for filename in files:
         new_songs = convert_file(filename)
@@ -80,7 +77,7 @@ def convert_all(files):
     print("--------------------------------------------------------------------")
     print(f"found total of {len(all_songs)} valid unskipped scrobbles")
     print(
-        f"At {SCROBBLES_PER_DAY} scrobbles/day, it would take {math.ceil(len(all_songs)/SCROBBLES_PER_DAY)} days to scrobble"
+        f"At {per_day} scrobbles/day, it would take {math.ceil(len(all_songs)/per_day)} days to scrobble"
     )
 
     first_chunk = 0
@@ -92,7 +89,7 @@ def convert_all(files):
         pass
 
     for i, song_chunk in enumerate(
-        list(chunk(all_songs[first_chunk:], SCROBBLES_PER_DAY)),
+        list(chunk(all_songs[first_chunk:], per_day)),
         start=1,
     ):
         filename = f"results/{i}.json"
@@ -104,19 +101,21 @@ def convert_all(files):
             print(f"Wrote {len(song_chunk)} scrobbles from {start} to {end} > {filename}")
 
 
-def main(folder):
+def main(folder, per_day):
     files = sorted([f"{folder}/{file}" for file in os.listdir(folder)])
-    convert_all(files)
+    convert_all(files, per_day)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3 or sys.argv[1] in ["-h", "--help"]:
+    if len(sys.argv) < 2 or sys.argv[1] in ["-h", "--help"]:
         print("Convert a spotify dataset into scrobbleable json.")
         print("Dataset folder is path to the directory where endsong_n.json files are located")
-        print("Lastfm has a limit of ~2800 scrobbles per day so keep the daily limit under that.")
+        print(
+            "Lastfm has a limit of ~2800 scrobbles per day so keep the daily limit under that. Default value is 2600"
+        )
         print()
         print("Usage:")
         print("\tpython convert.py [dataset folder] [scrobbles per day]")
         quit(1)
 
-    main(sys.argv[1])
+    main(sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 2600)

@@ -25,9 +25,13 @@ async def lastfm_login():
             "password": PASSWORD,
         }
     )
-    session = data["session"]["key"]
-    print("Logged in as", data["session"]["name"])
-    return session
+    try:
+        session = data["session"]["key"]
+        print("Logged in as", data["session"]["name"])
+        return session
+    except KeyError:
+        print("Could not get session")
+        print(data)
 
 
 def sign_call(params):
@@ -83,6 +87,7 @@ async def lastfm_request(params):
 
     base_url = "https://ws.audioscrobbler.com/2.0"
     params.update({"api_key": API_KEY})
+    print(params)
     params.update(
         {
             "api_sig": sign_call(params),

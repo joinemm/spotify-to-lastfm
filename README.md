@@ -33,7 +33,9 @@ Ready to import all your long lost plays of deadmau5 from 2012?
 
 Get lastfm api credentials https://www.last.fm/api/account/create
 
-Fill your key, secret, username and password into the `credentials.env` file.
+Fill your key, secret, username and password into the `example.credentials.env` file and **rename it to `credentials.env`** (eg. remove the `example.` prefix, this is for version management reasons)
+
+Alternatively you could supply these env variables in any other way you want.
 
 Select a file to scrobble and watch the results. Scrobbling will happen in blocks of 50 tracks and every track will have it's timestamp shifted by a minute from another, starting from 2 weeks ago. Lastfm has a hard limit of ~2800 scrobbles per day so keep that in mind. Running this more than once per day with max scrobbles **will** get you rate limited.
 
