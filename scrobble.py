@@ -107,7 +107,8 @@ async def main(filename):
     session_key = await lastfm_login()
     with open(filename, "r") as f:
         data = json.load(f)
-        data = remove_firsts(data)
+        # use this if you fcjked up
+        # data = remove_firsts(data)
         timestamp = datetime.datetime.now() - datetime.timedelta(13)
         print(f"Starting to scrobble {len(data)} tracks with timestamp set to {timestamp} ...")
         if "-v" in sys.argv:
@@ -119,7 +120,7 @@ async def main(filename):
                     "-",
                     track["track"],
                 )
-        await scrobble(session_key, data[550:], timestamp)
+        await scrobble(session_key, data, timestamp)
 
 
 if __name__ == "__main__":
