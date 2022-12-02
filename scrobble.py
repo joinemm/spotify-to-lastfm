@@ -50,10 +50,10 @@ async def scrobble(session_key, track_data, timestamp: datetime.datetime):
         for i, track in enumerate(tracks):
             params[f"artist[{i}]"] = track["artist"]
             params[f"track[{i}]"] = track["track"]
-            params[f"timestamp[{i}]"] = str(int(timestamp.timestamp()) + 60 * chunk_n)
+            params[f"timestamp[{i}]"] = str(int(timestamp.timestamp()) + 60 * chunk_n * i)
 
         data = await lastfm_request(params)
-        print("chunk", chunk_n)
+        print("Scrobbling chunk", chunk_n)
         try:
             print(data["scrobbles"]["@attr"])
             for scrobble in data["scrobbles"]["scrobble"]:
@@ -72,11 +72,15 @@ def chunk(it, size):
 
 def remove_firsts(tracks):
     seen = set()
+    seen_two = set()
     new_tracks = []
     for track in tracks:
         key = f"{track['artist']} {track['track']}"
         if key in seen:
-            new_tracks.append(track)
+            if key in seen_two:
+                new_tracks.append(track)
+            else:
+                seen_two.add(key)
         else:
             seen.add(key)
 
@@ -87,7 +91,6 @@ async def lastfm_request(params):
 
     base_url = "https://ws.audioscrobbler.com/2.0"
     params.update({"api_key": API_KEY})
-    print(params)
     params.update(
         {
             "api_sig": sign_call(params),
