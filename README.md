@@ -17,7 +17,7 @@ Convert your data. For example with data in `/dataset` and splitting into 2600 s
 $ python convert.py dataset 2600
 ```
 
-The resulting files will be spit into `/results/[n].json` 
+The resulting files will be spit into `/results/[n].json`
 
 ## Optional step: Analyze
 
@@ -37,7 +37,7 @@ Fill your key, secret, username and password into the `example.credentials.env` 
 
 Alternatively you could supply these env variables in any other way you want.
 
-Select a file to scrobble and watch the results. Scrobbling will happen in blocks of 50 tracks and every track will have it's timestamp shifted by a minute from another, starting from 2 weeks ago. Lastfm has a hard limit of ~2800 scrobbles per day so keep that in mind. Running this more than once per day with max scrobbles **will** get you rate limited.
+Select a file to scrobble and watch the results. Scrobbling will happen in blocks of 50 tracks and every track will have it's timestamp shifted by a minute from another, starting from 2 weeks ago to keep your weekly stats not fucked up. Lastfm has a hard limit of ~2800 scrobbles per day so keep that in mind. Running this more than once per day with max scrobbles **will** get you rate limited.
 
 ```
 $ python scrobble.py results/1.json [-v]
