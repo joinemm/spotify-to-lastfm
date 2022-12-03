@@ -50,7 +50,9 @@ async def scrobble(session_key, track_data, timestamp: datetime.datetime):
         for i, track in enumerate(tracks):
             params[f"artist[{i}]"] = track["artist"]
             params[f"track[{i}]"] = track["track"]
-            params[f"timestamp[{i}]"] = str(int(timestamp.timestamp()) + 60 * chunk_n * i)
+            params[f"timestamp[{i}]"] = str(
+                int(timestamp.timestamp()) + chunk_n * 50 * 60 + 60 * i
+            )
 
         data = await lastfm_request(params)
         print("Scrobbling chunk", chunk_n)
@@ -68,23 +70,6 @@ async def scrobble(session_key, track_data, timestamp: datetime.datetime):
 def chunk(it, size):
     it = iter(it)
     return iter(lambda: tuple(islice(it, size)), ())
-
-
-def remove_firsts(tracks):
-    seen = set()
-    seen_two = set()
-    new_tracks = []
-    for track in tracks:
-        key = f"{track['artist']} {track['track']}"
-        if key in seen:
-            if key in seen_two:
-                new_tracks.append(track)
-            else:
-                seen_two.add(key)
-        else:
-            seen.add(key)
-
-    return new_tracks
 
 
 async def lastfm_request(params):
@@ -110,8 +95,6 @@ async def main(filename):
     session_key = await lastfm_login()
     with open(filename, "r") as f:
         data = json.load(f)
-        # use this if you fcjked up
-        # data = remove_firsts(data)
         timestamp = datetime.datetime.now() - datetime.timedelta(13)
         print(f"Starting to scrobble {len(data)} tracks with timestamp set to {timestamp} ...")
         if "-v" in sys.argv:
