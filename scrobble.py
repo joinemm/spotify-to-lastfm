@@ -1,13 +1,13 @@
 import asyncio
 import datetime
+import json
+import os
+import sys
 from hashlib import md5
 from itertools import islice
-from dotenv import load_dotenv
-import json
-import sys
-import os
 
 import aiohttp
+from dotenv import load_dotenv
 
 load_dotenv("credentials.env")
 
@@ -50,6 +50,7 @@ async def scrobble(session_key, track_data, timestamp: datetime.datetime):
         for i, track in enumerate(tracks):
             params[f"artist[{i}]"] = track["artist"]
             params[f"track[{i}]"] = track["track"]
+            params[f"album[{i}]"] = track["album"]
             params[f"timestamp[{i}]"] = str(
                 int(timestamp.timestamp()) + chunk_n * 50 * 60 + 60 * i
             )
