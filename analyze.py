@@ -74,13 +74,13 @@ def main(args):
         )
         all_data = []
         for file in files:
-            with open(file, "r") as f:
+            with open(file, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 all_data += data
 
         analyze(all_data)
     else:
-        with open(args[1], "r") as f:
+        with open(args[1], "r", encoding="utf-8") as f:
             data = json.load(f)
             analyze(data)
 

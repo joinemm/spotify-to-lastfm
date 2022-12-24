@@ -94,7 +94,7 @@ async def lastfm_request(params):
 
 async def main(filename):
     session_key = await lastfm_login()
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         data = json.load(f)
         timestamp = datetime.datetime.now() - datetime.timedelta(13)
         print(f"Starting to scrobble {len(data)} tracks with timestamp set to {timestamp} ...")

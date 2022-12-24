@@ -4,13 +4,16 @@ import json
 import math
 import os
 import sys
+from dotenv import load_dotenv
+
+load_dotenv("credentials.env")
 
 UNTIL_TIMESTAMP = os.environ["UNTIL_TIMESTAMP"]
 DEST_FOLDER = "results"
 
 
 def convert_file(filename):
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         dataset = json.load(f)
 
     songs = []
@@ -104,7 +107,7 @@ def convert_all(files, per_day):
 
 def main(folder, per_day):
     files = sorted(
-        [f"{folder}/{file}" for file in os.listdir(folder).filter(lambda f: f.endswith(".json"))]
+        [f"{folder}/{file}" for file in filter(lambda f: f.endswith(".json"), os.listdir(folder))]
     )
     convert_all(files, per_day)
 
