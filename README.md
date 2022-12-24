@@ -33,7 +33,7 @@ To analyze all of it, use the `-A` flag with the folder name as the argument.
 
 ```
 $ python analyze.py results/1.json
-`
+
 $ python analyze.py -A results
 ```
 

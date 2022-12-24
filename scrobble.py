@@ -45,6 +45,7 @@ def sign_call(params):
 
 
 async def scrobble(session_key, track_data, timestamp: datetime.datetime):
+    session = aiohttp.ClientSession()
     for chunk_n, tracks in enumerate(chunk(track_data, 50)):
         params = {"sk": session_key, "method": "track.scrobble"}
         for i, track in enumerate(tracks):
@@ -55,7 +56,7 @@ async def scrobble(session_key, track_data, timestamp: datetime.datetime):
                 int(timestamp.timestamp()) + chunk_n * 50 * 60 + 60 * i
             )
 
-        data = await lastfm_request(params)
+        data = await lastfm_request(params, session)
         print("Scrobbling chunk", chunk_n)
         try:
             print(data["scrobbles"]["@attr"])
@@ -67,13 +68,16 @@ async def scrobble(session_key, track_data, timestamp: datetime.datetime):
             print(e)
             print(data)
 
+    # close opened session
+    await session.close()
+
 
 def chunk(it, size):
     it = iter(it)
     return iter(lambda: tuple(islice(it, size)), ())
 
 
-async def lastfm_request(params):
+async def lastfm_request(params: dict, session: aiohttp.ClientSession):
 
     base_url = "https://ws.audioscrobbler.com/2.0"
     params.update({"api_key": API_KEY})
@@ -84,9 +88,8 @@ async def lastfm_request(params):
         }
     )
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url=base_url, params=params) as response:
-            data = await response.json()
+    async with session.post(url=base_url, params=params) as response:
+        data = await response.json()
 
     # print(data)
     return data
