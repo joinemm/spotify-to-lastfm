@@ -1,7 +1,10 @@
 from datetime import datetime
 import json
 from operator import itemgetter
+import os
 import sys
+
+RESULTS_TO_SHOW = 20
 
 
 def analyze(data: dict):
@@ -40,28 +43,46 @@ def analyze(data: dict):
     print()
     print("\033[1m------ Top artists -------\033[0m")
     for i, (item, value) in enumerate(
-        sorted(artist_playcounts.items(), key=itemgetter(1), reverse=True)[:25], start=1
+        sorted(artist_playcounts.items(), key=itemgetter(1), reverse=True)[:RESULTS_TO_SHOW],
+        start=1,
     ):
         print(f"#{i:>3} \t {value} plays \t {item}")
     print()
     print("\033[1m------ Top  tracks -------\033[0m")
     for i, (item, value) in enumerate(
-        sorted(track_playcounts.items(), key=itemgetter(1), reverse=True)[:25], start=1
+        sorted(track_playcounts.items(), key=itemgetter(1), reverse=True)[:RESULTS_TO_SHOW],
+        start=1,
     ):
         print(f"#{i:>3} \t {value} plays \t {item}")
 
     print()
     print("\033[1m------ Top platforms -------\033[0m")
     for i, (item, value) in enumerate(
-        sorted(platforms.items(), key=itemgetter(1), reverse=True), start=1
+        sorted(platforms.items(), key=itemgetter(1), reverse=True)[:RESULTS_TO_SHOW], start=1
     ):
         print(f"#{i:>3} \t {value} plays \t {item}")
 
 
-def main(filename):
-    with open(filename, "r") as f:
-        data = json.load(f)
-        analyze(data)
+def main(args):
+    if args[1] in ["-A", "--all"]:
+        folder = args[2]
+        files = sorted(
+            [
+                f"{folder}/{file}"
+                for file in filter(lambda f: f.endswith(".json"), os.listdir(folder))
+            ]
+        )
+        all_data = []
+        for file in files:
+            with open(file, "r") as f:
+                data = json.load(f)
+                all_data += data
+
+        analyze(all_data)
+    else:
+        with open(args[1], "r") as f:
+            data = json.load(f)
+            analyze(data)
 
 
 if __name__ == "__main__":
@@ -70,5 +91,6 @@ if __name__ == "__main__":
         print()
         print("Usage:")
         print("\tpython analyze.py [path/to/json]")
+        print("\tpython analyze.py -A [path/to/folder]")
         quit(1)
-    main(sys.argv[1])
+    main(sys.argv)

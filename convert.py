@@ -5,6 +5,9 @@ import math
 import os
 import sys
 
+UNTIL_TIMESTAMP = os.environ["UNTIL_TIMESTAMP"]
+DEST_FOLDER = "results"
+
 
 def convert_file(filename):
     with open(filename, "r") as f:
@@ -15,7 +18,7 @@ def convert_file(filename):
     low_duration_songs = []
     after_lfm = []
     nulls = []
-    cutoff_time = datetime.strptime("2018-05-06T20:58:00Z", "%Y-%m-%dT%H:%M:%SZ").timestamp()
+    cutoff_time = datetime.strptime(UNTIL_TIMESTAMP, "%Y-%m-%dT%H:%M:%SZ").timestamp()
 
     for song in dataset:
         endtime = datetime.strptime(song["ts"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
@@ -47,15 +50,16 @@ def convert_file(filename):
     print(
         filename,
         len(songs),
-        "valid plays,",
+        "valid,",
         len(skipped_songs),
         "skipped,",
         len(low_duration_songs),
-        "under 30 seconds,",
+        "too short,",
         len(nulls),
-        "null values",
+        "broken,",
         len(after_lfm),
-        "already scrobbled",
+        "after",
+        cutoff_time,
     )
     return songs
 
@@ -81,7 +85,7 @@ def convert_all(files, per_day):
     all_songs = sorted(all_songs, key=lambda x: x["timestamp"])
 
     try:
-        os.makedirs("results")
+        os.makedirs(DEST_FOLDER)
     except FileExistsError:
         pass
 
@@ -89,7 +93,7 @@ def convert_all(files, per_day):
         list(chunk(all_songs[first_chunk:], per_day)),
         start=1,
     ):
-        filename = f"results/{i}.json"
+        filename = f"{DEST_FOLDER}/{i}.json"
         with open(filename, "w") as f:
             songs = list(song_chunk)
             f.write(json.dumps(songs, indent=2))
@@ -99,7 +103,9 @@ def convert_all(files, per_day):
 
 
 def main(folder, per_day):
-    files = sorted([f"{folder}/{file}" for file in os.listdir(folder)])
+    files = sorted(
+        [f"{folder}/{file}" for file in os.listdir(folder).filter(lambda f: f.endswith(".json"))]
+    )
     convert_all(files, per_day)
 
 
