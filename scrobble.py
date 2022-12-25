@@ -77,7 +77,7 @@ def chunk(it, size):
     return iter(lambda: tuple(islice(it, size)), ())
 
 
-async def lastfm_request(params: dict, session: aiohttp.ClientSession):
+async def lastfm_request(params: dict, session: aiohttp.ClientSession | None = None):
 
     base_url = "https://ws.audioscrobbler.com/2.0"
     params.update({"api_key": API_KEY})
@@ -87,9 +87,16 @@ async def lastfm_request(params: dict, session: aiohttp.ClientSession):
             "format": "json",
         }
     )
+    new_session = False
+    if session is None:
+        session = aiohttp.ClientSession()
+        new_session = True
 
     async with session.post(url=base_url, params=params) as response:
         data = await response.json()
+
+    if new_session:
+        await session.close()
 
     # print(data)
     return data
