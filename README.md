@@ -37,6 +37,12 @@ $ python analyze.py results/1.json
 $ python analyze.py -A results
 ```
 
+To see statistics per year, you can use the yearly script:
+
+```
+$ python yearly.py results
+```
+
 ## Step 3. Scrobble tracks to lastfm
 
 Ready to import all your long lost plays of deadmau5 from 2012?
