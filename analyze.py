@@ -7,6 +7,10 @@ import sys
 RESULTS_TO_SHOW = 20
 
 
+def bold(s):
+    return f"\033[1m{s}\033[0m"
+
+
 def analyze(data: dict):
     artist_playcounts = {}
     track_playcounts = {}
@@ -33,22 +37,21 @@ def analyze(data: dict):
 
     print(
         "Analyzing",
-        len(data),
-        "Scrobbles between \033[1m",
-        start,
-        "\033[0m and \033[1m",
-        end,
-        "\033[0m",
+        bold(len(data)),
+        "Scrobbles between",
+        bold(start),
+        "and",
+        bold(end),
     )
     print()
-    print("\033[1m------ Top artists -------\033[0m")
+    print(bold("------ Top artists -------"))
     for i, (item, value) in enumerate(
         sorted(artist_playcounts.items(), key=itemgetter(1), reverse=True)[:RESULTS_TO_SHOW],
         start=1,
     ):
         print(f"#{i:>3} \t {value} plays \t {item}")
     print()
-    print("\033[1m------ Top  tracks -------\033[0m")
+    print(bold("------ Top  tracks -------"))
     for i, (item, value) in enumerate(
         sorted(track_playcounts.items(), key=itemgetter(1), reverse=True)[:RESULTS_TO_SHOW],
         start=1,
@@ -56,7 +59,7 @@ def analyze(data: dict):
         print(f"#{i:>3} \t {value} plays \t {item}")
 
     print()
-    print("\033[1m------ Top platforms -------\033[0m")
+    print(bold("------ Top platforms -------"))
     for i, (item, value) in enumerate(
         sorted(platforms.items(), key=itemgetter(1), reverse=True)[:RESULTS_TO_SHOW], start=1
     ):
