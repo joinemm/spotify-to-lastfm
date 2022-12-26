@@ -8,8 +8,9 @@ from dotenv import load_dotenv
 
 load_dotenv("credentials.env")
 
-UNTIL_TIMESTAMP = os.environ["UNTIL_TIMESTAMP"]
+UNTIL_TIMESTAMP = os.environ.get("UNTIL_TIMESTAMP")
 DEST_FOLDER = "results"
+SONG_MIN_DURATION_MS = 30000
 
 
 def convert_file(filename):
@@ -18,10 +19,13 @@ def convert_file(filename):
 
     songs = []
     skipped_songs = []
-    low_duration_songs = []
+    too_short = []
     after_lfm = []
     nulls = []
-    cutoff_time = datetime.strptime(UNTIL_TIMESTAMP, "%Y-%m-%dT%H:%M:%SZ").timestamp()
+    if UNTIL_TIMESTAMP:
+        cutoff_time = datetime.strptime(UNTIL_TIMESTAMP, "%Y-%m-%dT%H:%M:%SZ").timestamp()
+    else:
+        cutoff_time = datetime.now().timestamp()
 
     for song in dataset:
         endtime = datetime.strptime(song["ts"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
@@ -29,7 +33,7 @@ def convert_file(filename):
         trackname = song["master_metadata_track_name"]
         albumname = song["master_metadata_album_album_name"]
         msplayed = song["ms_played"]
-        skipped = song["skipped"]
+        was_skipped = song["skipped"]
 
         new_format = {
             "timestamp": endtime,
@@ -39,10 +43,10 @@ def convert_file(filename):
             "ms_played": msplayed,
             "platform": song["platform"],
         }
-        if skipped:
+        if was_skipped:
             skipped_songs.append(new_format)
-        elif msplayed < 30000:
-            low_duration_songs.append(new_format)
+        elif msplayed < SONG_MIN_DURATION_MS:
+            too_short.append(new_format)
         elif endtime > cutoff_time:
             after_lfm.append(new_format)
         elif not artistname or not trackname or not albumname:
@@ -56,7 +60,7 @@ def convert_file(filename):
         "valid,",
         len(skipped_songs),
         "skipped,",
-        len(low_duration_songs),
+        len(too_short),
         "too short,",
         len(nulls),
         "broken,",
@@ -107,7 +111,10 @@ def convert_all(files, per_day):
 
 def main(folder, per_day):
     files = sorted(
-        [f"{folder}/{file}" for file in filter(lambda f: f.endswith(".json"), os.listdir(folder))]
+        [
+            f"{folder}/{file}"
+            for file in filter(lambda f: f.startswith("endsong"), os.listdir(folder))
+        ]
     )
     convert_all(files, per_day)
 
