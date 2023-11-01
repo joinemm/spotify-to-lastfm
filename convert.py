@@ -113,7 +113,7 @@ def main(folder, per_day):
     files = sorted(
         [
             f"{folder}/{file}"
-            for file in filter(lambda f: f.startswith("endsong"), os.listdir(folder))
+            for file in filter(lambda f: f.endswith(".json"), os.listdir(folder))
         ]
     )
     convert_all(files, per_day)
@@ -122,7 +122,7 @@ def main(folder, per_day):
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] in ["-h", "--help"]:
         print("Convert a spotify dataset into scrobbleable json.")
-        print("Dataset folder is path to the directory where endsong_n.json files are located")
+        print("Dataset folder is path to the directory where spotify json files are located")
         print(
             "Lastfm has a limit of ~2800 scrobbles per day so keep the daily limit under that. Default value is 2600"
         )
