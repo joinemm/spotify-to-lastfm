@@ -10,12 +10,20 @@ Select `extended streaming history` and wait for you data package to arrive with
 
 ## Step 2. Parse, filter and convert spotify json into scrobbleable json
 
+> Before getting started you need to install Python and Git however you wish.
+
 Clone this repo where you want it:
 
 ```sh
 git clone https://github.com/joinemm/spotify-to-lastfm
 
 cd spotify-to-lastfm
+```
+
+Install dependencies:
+
+```sh
+python -m pip install -r requirements.txt
 ```
 
 Move your spotify data.zip into this folder and extract it. You will find your scrobbling data in `./MyData`. Either keep it there or move it somewhere else. As long as you know the path.
