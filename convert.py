@@ -6,9 +6,7 @@ import os
 import sys
 from dotenv import load_dotenv
 
-load_dotenv("credentials.env")
-
-UNTIL_TIMESTAMP = os.environ.get("UNTIL_TIMESTAMP")
+UNTIL_TIMESTAMP = None
 DEST_FOLDER = "results"
 SONG_MIN_DURATION_MS = 30000
 
@@ -110,6 +108,9 @@ def convert_all(files, per_day):
 
 
 def main(folder, per_day):
+    load_dotenv("credentials.env")
+    global UNTIL_TIMESTAMP
+    UNTIL_TIMESTAMP = os.environ.get("UNTIL_TIMESTAMP")
     files = sorted(
         [
             f"{folder}/{file}"

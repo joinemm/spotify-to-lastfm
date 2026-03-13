@@ -9,22 +9,41 @@ from itertools import islice
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv("credentials.env")
+LASTFM_API_KEY: str | None = None
+LASTFM_API_SECRET: str | None = None
+LASTFM_USERNAME: str | None = None
+LASTFM_PASSWORD: str | None = None
 
-API_KEY = os.environ["LASTFM_API_KEY"]
-API_SECRET = os.environ["LASTFM_API_SECRET"]
-USERNAME = os.environ["LASTFM_USERNAME"]
-PASSWORD = os.environ["LASTFM_PASSWORD"]
+
+def load_credentials():
+    load_dotenv("credentials.env")
+    missing = []
+    values = [
+        "LASTFM_API_KEY",
+        "LASTFM_API_SECRET",
+        "LASTFM_USERNAME",
+        "LASTFM_PASSWORD",
+    ]
+    for env_key in values:
+        value = os.environ.get(env_key)
+        if not value:
+            missing.append(env_key)
+        else:
+            globals()[env_key] = value
+    if missing:
+        raise SystemExit(f"Missing required env vars: {', '.join(missing)}")
 
 
 async def lastfm_login():
-    data = await lastfm_request(
-        {
+    assert LASTFM_USERNAME is not None
+    assert LASTFM_PASSWORD is not None
+    async with aiohttp.ClientSession() as session:
+        params = {
             "method": "auth.getMobileSession",
-            "username": USERNAME,
-            "password": PASSWORD,
+            "username": LASTFM_USERNAME,
+            "password": LASTFM_PASSWORD,
         }
-    )
+        data = await lastfm_request(params, session)
     try:
         session = data["session"]["key"]
         print("Logged in as", data["session"]["name"])
@@ -35,41 +54,44 @@ async def lastfm_login():
 
 
 def sign_call(params):
+    assert LASTFM_API_SECRET is not None
     signature = ""
     for p in sorted(params):
         signature += p
         signature += params[p]
-    signature += API_SECRET
+    signature += LASTFM_API_SECRET
     signature = md5(signature.encode("utf-8")).hexdigest()
     return signature
 
 
 async def scrobble(session_key, track_data, timestamp: datetime.datetime):
-    session = aiohttp.ClientSession()
-    for chunk_n, tracks in enumerate(chunk(track_data, 50)):
-        params = {"sk": session_key, "method": "track.scrobble"}
-        for i, track in enumerate(tracks):
-            params[f"artist[{i}]"] = track["artist"]
-            params[f"track[{i}]"] = track["track"]
-            params[f"album[{i}]"] = track["album"]
-            params[f"timestamp[{i}]"] = str(
-                int(timestamp.timestamp()) + chunk_n * 50 * 60 + 60 * i
-            )
+    async with aiohttp.ClientSession() as session:
+        for chunk_n, tracks in enumerate(chunk(track_data, 50)):
+            params = {"sk": session_key, "method": "track.scrobble"}
+            for i, track in enumerate(tracks):
+                params[f"artist[{i}]"] = track["artist"]
+                params[f"track[{i}]"] = track["track"]
+                params[f"album[{i}]"] = track["album"]
+                params[f"timestamp[{i}]"] = str(
+                    int(timestamp.timestamp()) + chunk_n * 50 * 60 + 60 * i
+                )
 
-        data = await lastfm_request(params, session)
-        print("Scrobbling chunk", chunk_n)
-        try:
-            print(data["scrobbles"]["@attr"])
-            for scrobble in data["scrobbles"]["scrobble"]:
-                ignored = scrobble["ignoredMessage"]
-                if ignored["code"] != "0":
-                    print(scrobble["artist"]["#text"], "-", scrobble["track"]["#text"], ignored)
-        except KeyError as e:
-            print(e)
-            print(data)
-
-    # close opened session
-    await session.close()
+            data = await lastfm_request(params, session)
+            print("Scrobbling chunk", chunk_n)
+            try:
+                print(data["scrobbles"]["@attr"])
+                for scrobble in data["scrobbles"]["scrobble"]:
+                    ignored = scrobble["ignoredMessage"]
+                    if ignored["code"] != "0":
+                        print(
+                            scrobble["artist"]["#text"],
+                            "-",
+                            scrobble["track"]["#text"],
+                            ignored,
+                        )
+            except KeyError as e:
+                print(e)
+                print(data)
 
 
 def chunk(it, size):
@@ -77,37 +99,32 @@ def chunk(it, size):
     return iter(lambda: tuple(islice(it, size)), ())
 
 
-async def lastfm_request(params: dict, session: aiohttp.ClientSession | None = None):
-
+async def lastfm_request(params: dict, session: aiohttp.ClientSession):
     base_url = "https://ws.audioscrobbler.com/2.0"
-    params.update({"api_key": API_KEY})
+    assert LASTFM_API_KEY is not None
+    params.update({"api_key": LASTFM_API_KEY})
     params.update(
         {
             "api_sig": sign_call(params),
             "format": "json",
         }
     )
-    new_session = False
-    if session is None:
-        session = aiohttp.ClientSession()
-        new_session = True
-
     async with session.post(url=base_url, params=params) as response:
+        response.raise_for_status()
         data = await response.json()
 
-    if new_session:
-        await session.close()
-
-    # print(data)
     return data
 
 
 async def main(filename):
+    load_credentials()
     session_key = await lastfm_login()
     with open(filename, "r", encoding="utf-8") as f:
         data = json.load(f)
         timestamp = datetime.datetime.now() - datetime.timedelta(13)
-        print(f"Starting to scrobble {len(data)} tracks with timestamp set to {timestamp} ...")
+        print(
+            f"Starting to scrobble {len(data)} tracks with timestamp set to {timestamp} ..."
+        )
         if "-v" in sys.argv:
             for track in data:
                 print(
