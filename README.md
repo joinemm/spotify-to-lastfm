@@ -29,9 +29,10 @@ Install dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Move your spotify data.zip into this folder and extract it. You will find your
-scrobbling data in `./MyData`. Either keep it there or move it somewhere else.
-As long as you know the path.
+Move your my_spotify_data.zip into this folder and extract it. You will find
+your scrobbling data in `./my_spotify_data/Spotify Extended Streaming History/`.
+Either keep it there or move it somewhere else. As long as you know the path.
+This guide will use `MyData` to refer to this path.
 
 Get lastfm api credentials from https://www.last.fm/api/account/create.
 Application details can be whatever it doesn't matter.
