@@ -32,7 +32,8 @@ python -m pip install -r requirements.txt
 Move your my_spotify_data.zip into this folder and extract it. You will find
 your scrobbling data in `./my_spotify_data/Spotify Extended Streaming History/`.
 Either keep it there or move it somewhere else. As long as you know the path.
-This guide will use `MyData` to refer to this path.
+Note that you will need to either escape the whitespace or quote the whole path
+(especially on windows).
 
 Get lastfm api credentials from https://www.last.fm/api/account/create.
 Application details can be whatever it doesn't matter.
@@ -46,11 +47,14 @@ Alternatively you could supply these env variables in any other way you want.
 
 > Any further commands assume your working directory is this repo
 
-Convert your data. For example with data in `./MyData` and splitting into 2600
-scrobbles per day (more about that later):
+Open a new terminal/command prompt. On Windows 11 this can be done from the
+directory's right click menu (open in terminal).
+
+Convert your data, splitting into 2600 scrobbles per day (more about that
+later):
 
 ```sh
-python convert.py MyData 2600
+python convert.py ./"my_spotify_data/Spotify Extended Streaming History" 2600
 ```
 
 The resulting files will be split into json files in `/results/[n].json`
