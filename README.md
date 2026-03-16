@@ -13,7 +13,7 @@ the enthusiasm of a child waiting for their christmas present.
 
 > Before getting started you need to install Python and Git however you wish.
 
-### Supported Python version: 3.13
+### Supported Python versions: 3.13, 3.14
 
 Clone this repo where you want it:
 
